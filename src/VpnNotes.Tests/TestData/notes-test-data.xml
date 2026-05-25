@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestData>
+
+	<!-- ============ ADD: добавление заметок ============ -->
+
+	<Row>
+		<Operation>add</Operation>
+		<Text>Simple test note</Text>
+		<Tags></Tags>
+		<SearchQuery></SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>1</ExpectedCount>
+		<Description>Add simple note without tags</Description>
+	</Row>
+
+	<Row>
+		<Operation>add</Operation>
+		<Text>Note with tags</Text>
+		<Tags>incident,openvpn</Tags>
+		<SearchQuery></SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>1</ExpectedCount>
+		<Description>Add note with two tags</Description>
+	</Row>
+
+	<Row>
+		<Operation>add</Operation>
+		<Text>Тест с юникодом 🚀 и иероглифами 中文</Text>
+		<Tags></Tags>
+		<SearchQuery></SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>1</ExpectedCount>
+		<Description>Add note with Unicode and emoji</Description>
+	</Row>
+
+	<Row>
+		<Operation>add</Operation>
+		<Text>Long note: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</Text>
+		<Tags></Tags>
+		<SearchQuery></SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>1</ExpectedCount>
+		<Description>Add long note (100+ chars)</Description>
+	</Row>
+
+	<!-- ============ SEARCH: поиск заметок ============ -->
+
+	<Row>
+		<Operation>search</Operation>
+		<Text>OpenVPN configuration was updated yesterday</Text>
+		<Tags></Tags>
+		<SearchQuery>openvpn</SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>1</ExpectedCount>
+		<Description>Search finds note (case insensitive lowercase)</Description>
+	</Row>
+
+	<Row>
+		<Operation>search</Operation>
+		<Text>Firewall rules were modified</Text>
+		<Tags></Tags>
+		<SearchQuery>FIREWALL</SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>1</ExpectedCount>
+		<Description>Search is case insensitive (uppercase query)</Description>
+	</Row>
+
+	<Row>
+		<Operation>search</Operation>
+		<Text>SSL certificate renewed</Text>
+		<Tags></Tags>
+		<SearchQuery>nonexistent_keyword</SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>0</ExpectedCount>
+		<Description>Search returns empty when no match</Description>
+	</Row>
+
+	<Row>
+		<Operation>search</Operation>
+		<Text>Normal note content for SQL injection test</Text>
+		<Tags></Tags>
+		<SearchQuery>'; DROP TABLE notes; --</SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>0</ExpectedCount>
+		<Description>SQL injection attempt is safely handled</Description>
+	</Row>
+
+	<Row>
+		<Operation>search</Operation>
+		<Text>Перезагрузил сервер из-за утечки памяти</Text>
+		<Tags></Tags>
+		<SearchQuery>памяти</SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>1</ExpectedCount>
+		<Description>Search works with Cyrillic text</Description>
+	</Row>
+
+	<!-- ============ DELETE: удаление заметок ============ -->
+
+	<Row>
+		<Operation>delete</Operation>
+		<Text>Note to delete</Text>
+		<Tags></Tags>
+		<SearchQuery></SearchQuery>
+		<ExpectedResult>success</ExpectedResult>
+		<ExpectedCount>0</ExpectedCount>
+		<Description>Delete existing note</Description>
+	</Row>
+
+	<Row>
+		<Operation>delete_nonexistent</Operation>
+		<Text></Text>
+		<Tags></Tags>
+		<SearchQuery></SearchQuery>
+		<ExpectedResult>not_found</ExpectedResult>
+		<ExpectedCount>0</ExpectedCount>
+		<Description>Delete non-existent note (id=99999)</Description>
+	</Row>
+
+</TestData>

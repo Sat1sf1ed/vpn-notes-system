@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestData>
+
+	<!-- Валидные учётки трёх ролей -->
+	<Row>
+		<Username>test_admin</Username>
+		<Password>test_pass</Password>
+		<ExpectedResult>success</ExpectedResult>
+		<Description>Valid admin credentials</Description>
+	</Row>
+
+	<Row>
+		<Username>test_user</Username>
+		<Password>test_pass</Password>
+		<ExpectedResult>success</ExpectedResult>
+		<Description>Valid user credentials</Description>
+	</Row>
+
+	<Row>
+		<Username>test_stats</Username>
+		<Password>test_pass</Password>
+		<ExpectedResult>success</ExpectedResult>
+		<Description>Valid stats credentials</Description>
+	</Row>
+
+	<!-- Невалидные учётки -->
+	<Row>
+		<Username>test_user</Username>
+		<Password>wrong_password</Password>
+		<ExpectedResult>fail_invalid_password</ExpectedResult>
+		<Description>Existing user with wrong password</Description>
+	</Row>
+
+	<Row>
+		<Username>nonexistent_user</Username>
+		<Password>any_password</Password>
+		<ExpectedResult>fail_invalid_password</ExpectedResult>
+		<Description>Non-existent user</Description>
+	</Row>
+
+	<Row>
+		<Username>test_admin</Username>
+		<Password>wrong</Password>
+		<ExpectedResult>fail_invalid_password</ExpectedResult>
+		<Description>Admin with wrong password</Description>
+	</Row>
+
+</TestData>

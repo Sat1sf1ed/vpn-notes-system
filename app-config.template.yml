@@ -1,0 +1,15 @@
+# VPN Notes System configuration
+
+database:
+  host: "гюонкмхре_юдпея_ад"
+  port: 5432
+  database: "vpnnotes"
+
+watcher:
+  metrics_interval_seconds: 60
+
+update:
+  current_version: "1.0.0"
+  github:
+    owner: "бюь_GITHUB_кнцхм"
+    repo: "vpn-notes-system"

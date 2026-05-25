@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestData>
+
+	<!-- Успешные подключения -->
+	<Row>
+		<Host>localhost</Host>
+		<Port>5432</Port>
+		<Database>vpnnotes_test</Database>
+		<Username>test_admin</Username>
+		<Password>test_pass</Password>
+		<Timeout>5</Timeout>
+		<ExpectedResult>success</ExpectedResult>
+		<Description>Valid connection with admin credentials</Description>
+	</Row>
+
+	<Row>
+		<Host>127.0.0.1</Host>
+		<Port>5432</Port>
+		<Database>vpnnotes_test</Database>
+		<Username>test_user</Username>
+		<Password>test_pass</Password>
+		<Timeout>5</Timeout>
+		<ExpectedResult>success</ExpectedResult>
+		<Description>Valid connection via 127.0.0.1 with user credentials</Description>
+	</Row>
+
+	<!-- Невалидный хост: IP из диапазона для документации, гарантированно недоступен -->
+	<Row>
+		<Host>192.0.2.123</Host>
+		<Port>5432</Port>
+		<Database>vpnnotes_test</Database>
+		<Username>test_admin</Username>
+		<Password>test_pass</Password>
+		<Timeout>2</Timeout>
+		<ExpectedResult>fail_network</ExpectedResult>
+		<Description>Unreachable host (TEST-NET-1 range)</Description>
+	</Row>
+
+	<!-- Несуществующая БД -->
+	<Row>
+		<Host>localhost</Host>
+		<Port>5432</Port>
+		<Database>does_not_exist_db</Database>
+		<Username>test_admin</Username>
+		<Password>test_pass</Password>
+		<Timeout>5</Timeout>
+		<ExpectedResult>fail_database</ExpectedResult>
+		<Description>Non-existent database name</Description>
+	</Row>
+
+	<!-- Неверный порт: на этом порту никто не слушает -->
+	<Row>
+		<Host>localhost</Host>
+		<Port>54321</Port>
+		<Database>vpnnotes_test</Database>
+		<Username>test_admin</Username>
+		<Password>test_pass</Password>
+		<Timeout>2</Timeout>
+		<ExpectedResult>fail_network</ExpectedResult>
+		<Description>Wrong port number</Description>
+	</Row>
+
+	<!-- Неверный пароль -->
+	<Row>
+		<Host>localhost</Host>
+		<Port>5432</Port>
+		<Database>vpnnotes_test</Database>
+		<Username>test_admin</Username>
+		<Password>completely_wrong</Password>
+		<Timeout>5</Timeout>
+		<ExpectedResult>fail_auth</ExpectedResult>
+		<Description>Wrong password for existing user</Description>
+	</Row>
+
+</TestData>

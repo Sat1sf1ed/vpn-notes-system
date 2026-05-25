@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestData>
+
+	<!-- Нужно обновиться: remote > current -->
+	<Row>
+		<CurrentVersion>1.0.0</CurrentVersion>
+		<RemoteTag>v1.1.0</RemoteTag>
+		<ExpectedDecision>update</ExpectedDecision>
+		<ExpectedParsedVersion>1.1.0</ExpectedParsedVersion>
+		<Description>Patch version increment with v prefix</Description>
+	</Row>
+
+	<Row>
+		<CurrentVersion>1.0.0</CurrentVersion>
+		<RemoteTag>v2.0.0</RemoteTag>
+		<ExpectedDecision>update</ExpectedDecision>
+		<ExpectedParsedVersion>2.0.0</ExpectedParsedVersion>
+		<Description>Major version increment</Description>
+	</Row>
+
+	<Row>
+		<CurrentVersion>1.2.0</CurrentVersion>
+		<RemoteTag>v1.10.0</RemoteTag>
+		<ExpectedDecision>update</ExpectedDecision>
+		<ExpectedParsedVersion>1.10.0</ExpectedParsedVersion>
+		<Description>Numeric comparison: 1.10.0 is greater than 1.2.0</Description>
+	</Row>
+
+	<Row>
+		<CurrentVersion>0.9.0</CurrentVersion>
+		<RemoteTag>1.0.0</RemoteTag>
+		<ExpectedDecision>update</ExpectedDecision>
+		<ExpectedParsedVersion>1.0.0</ExpectedParsedVersion>
+		<Description>Tag without v prefix</Description>
+	</Row>
+
+	<Row>
+		<CurrentVersion>1.0.0</CurrentVersion>
+		<RemoteTag>V1.0.1</RemoteTag>
+		<ExpectedDecision>update</ExpectedDecision>
+		<ExpectedParsedVersion>1.0.1</ExpectedParsedVersion>
+		<Description>Tag with uppercase V prefix</Description>
+	</Row>
+
+	<!-- Не нужно обновляться: версии равны -->
+	<Row>
+		<CurrentVersion>1.5.0</CurrentVersion>
+		<RemoteTag>v1.5.0</RemoteTag>
+		<ExpectedDecision>skip</ExpectedDecision>
+		<ExpectedParsedVersion>1.5.0</ExpectedParsedVersion>
+		<Description>Same version, no update needed</Description>
+	</Row>
+
+	<!-- Не нужно обновляться: remote < current (откат) -->
+	<Row>
+		<CurrentVersion>2.0.0</CurrentVersion>
+		<RemoteTag>v1.5.0</RemoteTag>
+		<ExpectedDecision>skip</ExpectedDecision>
+		<ExpectedParsedVersion>1.5.0</ExpectedParsedVersion>
+		<Description>Remote is older than current</Description>
+	</Row>
+
+	<Row>
+		<CurrentVersion>1.10.0</CurrentVersion>
+		<RemoteTag>v1.2.0</RemoteTag>
+		<ExpectedDecision>skip</ExpectedDecision>
+		<ExpectedParsedVersion>1.2.0</ExpectedParsedVersion>
+		<Description>Numeric: 1.2.0 is less than 1.10.0</Description>
+	</Row>
+
+	<!-- Невалидные теги -->
+	<Row>
+		<CurrentVersion>1.0.0</CurrentVersion>
+		<RemoteTag>not-a-version</RemoteTag>
+		<ExpectedDecision>invalid_tag</ExpectedDecision>
+		<ExpectedParsedVersion></ExpectedParsedVersion>
+		<Description>Garbage tag string</Description>
+	</Row>
+
+	<Row>
+		<CurrentVersion>1.0.0</CurrentVersion>
+		<RemoteTag>v</RemoteTag>
+		<ExpectedDecision>invalid_tag</ExpectedDecision>
+		<ExpectedParsedVersion></ExpectedParsedVersion>
+		<Description>Only v prefix, no version numbers</Description>
+	</Row>
+
+	<Row>
+		<CurrentVersion>1.0.0</CurrentVersion>
+		<RemoteTag></RemoteTag>
+		<ExpectedDecision>invalid_tag</ExpectedDecision>
+		<ExpectedParsedVersion></ExpectedParsedVersion>
+		<Description>Empty tag</Description>
+	</Row>
+
+</TestData>

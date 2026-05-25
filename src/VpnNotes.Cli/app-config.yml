@@ -1,0 +1,11 @@
+﻿database:
+  host: "localhost"
+  port: 5432
+  database: "vpnnotes"
+watcher:
+  metrics_interval_seconds: 60
+update:
+  current_version: "1.0.0"
+  github:
+    owner: "Sat1sf1ed"
+    repo: "vpn-notes-system"
