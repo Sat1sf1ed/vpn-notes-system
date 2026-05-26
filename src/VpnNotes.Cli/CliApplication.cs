@@ -229,6 +229,9 @@ namespace VpnNotes.Cli
                 case "deluser":         // ← новое
                     await DeleteUserAsync(rest);
                     break;
+                case "logs": 
+                    await ShowLogsAsync(args); 
+                    break;
                 case "help":
                     ShowHelp();
                     break;
@@ -280,7 +283,7 @@ namespace VpnNotes.Cli
             // === Админские команды ===
             string[] adminCommands = new string[]
             {
-        "users", "adduser", "deluser"
+        "users", "adduser", "deluser", "logs"
             };
             if (adminCommands.Contains(command))
             {
@@ -696,6 +699,7 @@ namespace VpnNotes.Cli
                 Console.WriteLine("  adduser <username> <role> [--name X]  Create a new user");
                 Console.WriteLine("                                        Roles: user, stats, admin");
                 Console.WriteLine("  deluser <username>                    Delete a user");
+                Console.WriteLine("  logs [--last N] [--level X] [--date]  Show Watcher logs");
                 Console.WriteLine();
             }
 
@@ -1124,6 +1128,204 @@ namespace VpnNotes.Cli
             {
                 Console.WriteLine($"Failed to register machine: {ex.Message}");
             }
+        }
+        private Task ShowLogsAsync(string[] args)
+        {
+            // Парсим параметры
+            int limit = 20;
+            string? levelFilter = null;
+            string? dateFilter = null;
+
+            string? lastStr = ExtractOption(args, "--last");
+            if (lastStr != null)
+            {
+                if (!int.TryParse(lastStr, out limit) || limit < 1 || limit > 1000)
+                {
+                    Console.WriteLine("--last must be a number between 1 and 1000");
+                    return Task.CompletedTask;
+                }
+            }
+
+            levelFilter = ExtractOption(args, "--level");
+            if (levelFilter != null)
+            {
+                levelFilter = levelFilter.ToUpper();
+                string[] validLevels = { "INFO", "WARN", "ERROR", "DEBUG", "FATAL" };
+                if (!validLevels.Contains(levelFilter))
+                {
+                    Console.WriteLine($"Invalid level. Allowed: {string.Join(", ", validLevels)}");
+                    return Task.CompletedTask;
+                }
+            }
+
+            dateFilter = ExtractOption(args, "--date");
+
+            // Определяем какой файл читать
+            string logsDir = Path.Combine(AppContext.BaseDirectory, "logs");
+
+            if (!Directory.Exists(logsDir))
+            {
+                Console.WriteLine("Logs directory not found.");
+                Console.WriteLine($"Expected location: {logsDir}");
+                return Task.CompletedTask;
+            }
+
+            string logFileName;
+            if (dateFilter != null)
+            {
+                // Пользователь указал конкретную дату
+                if (!DateTime.TryParse(dateFilter, out DateTime parsedDate))
+                {
+                    Console.WriteLine("Invalid date format. Use YYYY-MM-DD (example: 2026-05-23)");
+                    return Task.CompletedTask;
+                }
+                logFileName = $"watcher-{parsedDate:yyyyMMdd}.log";
+            }
+            else
+            {
+                // По умолчанию — сегодняшний файл
+                logFileName = $"watcher-{DateTime.Now:yyyyMMdd}.log";
+            }
+
+            string logFilePath = Path.Combine(logsDir, logFileName);
+
+            if (!File.Exists(logFilePath))
+            {
+                Console.WriteLine($"Log file not found: {logFileName}");
+
+                // Покажем какие файлы есть в наличии
+                string[] availableFiles = Directory.GetFiles(logsDir, "watcher-*.log")
+                    .Select(Path.GetFileName)
+                    .OrderByDescending(f => f)
+                    .Take(5)
+                    .ToArray()!;
+
+                if (availableFiles.Length > 0)
+                {
+                    Console.WriteLine("Available log files (latest 5):");
+                    foreach (string file in availableFiles)
+                    {
+                        Console.WriteLine($"  {file}");
+                    }
+                }
+                return Task.CompletedTask;
+            }
+
+            // Читаем файл
+            string[] allLines;
+            try
+            {
+                // FileShare.ReadWrite — чтобы можно было читать файл
+                // даже когда Serilog в него пишет
+                using FileStream fs = new FileStream(
+                    logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using StreamReader reader = new StreamReader(fs);
+                string content = reader.ReadToEnd();
+                allLines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Failed to read log file: {ex.Message}");
+                return Task.CompletedTask;
+            }
+
+            // Фильтруем по уровню если указан
+            IEnumerable<string> filteredLines = allLines;
+            if (levelFilter != null)
+            {
+                filteredLines = allLines.Where(line => LineMatchesLevel(line, levelFilter));
+            }
+
+            // Берём последние N строк
+            string[] resultLines = filteredLines
+                .Reverse()        // чтобы свежие шли первыми
+                .Take(limit)
+                .Reverse()        // возвращаем хронологический порядок
+                .ToArray();
+
+            if (resultLines.Length == 0)
+            {
+                Console.WriteLine("No matching log entries found.");
+                return Task.CompletedTask;
+            }
+
+            // Выводим результат
+            Console.WriteLine();
+            Console.WriteLine($"=== {logFileName} ===");
+            if (levelFilter != null)
+            {
+                Console.WriteLine($"Filter: level >= {levelFilter}");
+            }
+            Console.WriteLine($"Showing last {resultLines.Length} entries:");
+            Console.WriteLine(new string('-', 80));
+
+            foreach (string line in resultLines)
+            {
+                // Подсветка уровня цветом
+                PrintLogLine(line);
+            }
+
+            Console.WriteLine();
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Проверяет, соответствует ли строка лога заданному уровню.
+        /// Уровни иерархичны: FATAL > ERROR > WARN > INFO > DEBUG.
+        /// Если filter = ERROR, показываем ERROR и FATAL.
+        /// </summary>
+        private static bool LineMatchesLevel(string line, string filterLevel)
+        {
+            // Serilog формат: 2026-05-23 10:45:22.123 +03:00 [INF] Message
+            // Нас интересует [INF], [WRN], [ERR], [FTL], [DBG]
+
+            if (!line.Contains('[') || !line.Contains(']'))
+                return false;
+
+            int start = line.IndexOf('[');
+            int end = line.IndexOf(']', start);
+            if (end <= start) return false;
+
+            string levelTag = line.Substring(start + 1, end - start - 1).Trim();
+
+            // Приоритеты уровней (выше = критичнее)
+            int linePriority = GetLevelPriority(levelTag);
+            int filterPriority = GetLevelPriority(filterLevel);
+
+            return linePriority >= filterPriority;
+        }
+
+        private static int GetLevelPriority(string level)
+        {
+            return level.ToUpper() switch
+            {
+                "DBG" or "DEBUG" => 1,
+                "INF" or "INFO" => 2,
+                "WRN" or "WARN" or "WARNING" => 3,
+                "ERR" or "ERROR" => 4,
+                "FTL" or "FATAL" => 5,
+                _ => 0  // неизвестный уровень — самый низкий приоритет
+            };
+        }
+
+        /// <summary>
+        /// Выводит строку лога с цветовой подсветкой уровня.
+        /// </summary>
+        private static void PrintLogLine(string line)
+        {
+            ConsoleColor originalColor = Console.ForegroundColor;
+
+            if (line.Contains("[ERR]") || line.Contains("[FTL]"))
+                Console.ForegroundColor = ConsoleColor.Red;
+            else if (line.Contains("[WRN]"))
+                Console.ForegroundColor = ConsoleColor.Yellow;
+            else if (line.Contains("[INF]"))
+                Console.ForegroundColor = ConsoleColor.Gray;
+            else if (line.Contains("[DBG]"))
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+
+            Console.WriteLine(line);
+            Console.ForegroundColor = originalColor;
         }
     }
 }

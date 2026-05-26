@@ -15,13 +15,12 @@ namespace VpnNotes.Tests
         public const string AdminUsername = "postgres";
         public const string AdminPassword = "1234";
 
-        public const string TestUsername = "test";
-        public const string TestPassword = "test123";
+        public const string TestUsername = "test_user";
+        public const string TestPassword = "test_pass";
 
         public static string AdminConnectionString =>
             $"Host={Host};Port={Port};Database={DatabaseName};" +
             $"Username={AdminUsername};Password={AdminPassword}";
-
         public static string UserConnectionString =>
             $"Host={Host};Port={Port};Database={DatabaseName};" +
             $"Username={TestUsername};Password={TestPassword}";
